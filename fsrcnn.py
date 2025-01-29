@@ -5,11 +5,13 @@ import tensorflow as tf
 import numpy as np 
 import os
 
-def model(x, y, lr_size, scale, batch, lr, (d, s, m)):
+def model(x, y, lr_size, scale, batch, lr, dsm):
     """
     Implementation of FSRCNN: http://mmlab.ie.cuhk.edu.hk/projects/FSRCNN.html.
     """
     
+    d, s, m = dsm  # Unpacking the tuple
+
     channels = 1
     PS = channels * (scale*scale) # for sub-pixel, PS = Phase Shift
     bias_initializer = tf.constant_initializer(value=0.0)
