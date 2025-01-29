@@ -11,7 +11,7 @@ def model(x, y, lr_size, scale, batch, lr, dsm):
     d, s, m = dsm  # Unpack the tuple inside the function
 
     channels = 1
-    PS = channels * (scale*scale)  # for sub-pixel, PS = Phase Shift
+    PS = channels * (scale * scale)  # for sub-pixel, PS = Phase Shift
     bias_initializer = tf.constant_initializer(value=0.0)
 
     # -- Filters and Biases
@@ -81,3 +81,19 @@ def prelu(_x, name):
     neg = alphas * (_x - abs(_x)) * 0.5
 
     return pos + neg
+
+def main():
+    # Example main function for training/testing model
+    batch_size = 16
+    scale = 3
+    lr_size = 0.0001
+    dsm = (64, 12, 5)  # Example values for d, s, m
+    x = tf.placeholder(tf.float32, shape=[None, None, None, 1])  # Placeholder for input image
+    y = tf.placeholder(tf.float32, shape=[None, None, None, 1])  # Placeholder for output image
+    
+    out, loss, train_op, psnr = model(x, y, lr_size, scale, batch_size, lr_size, dsm)
+    
+    # Further training/test code goes here
+
+if __name__ == "__main__":
+    main()
