@@ -82,6 +82,26 @@ def prelu(_x, name):
     return pos + neg
 
 
+def load_dataset(lr_dir, hr_dir):
+    """
+    Load low-resolution and high-resolution image pairs from directories.
+    """
+    lr_images = []
+    hr_images = []
+
+    for lr_file in os.listdir(lr_dir):
+        lr_path = os.path.join(lr_dir, lr_file)
+        hr_path = os.path.join(hr_dir, lr_file)  # Assuming filenames match
+
+        lr_img = cv2.imread(lr_path, cv2.IMREAD_GRAYSCALE) / 255.0  # Normalize to [0, 1]
+        hr_img = cv2.imread(hr_path, cv2.IMREAD_GRAYSCALE) / 255.0
+
+        lr_images.append(np.expand_dims(lr_img, axis=-1))  # Add channel dimension
+        hr_images.append(np.expand_dims(hr_img, axis=-1))
+
+    return np.array(lr_images), np.array(hr_images)
+
+
 def main():
     """
     Main function for training/testing the FSRCNN model.
@@ -91,6 +111,14 @@ def main():
     scale = 3  # Upscaling factor
     lr_size = 0.0001  # Learning rate
     dsm = (64, 12, 5)  # Example values for d, s, m
+    epochs = 10
+
+    # Dataset paths
+    lr_dir = "./data/lr_images"  # Directory containing low-resolution images
+    hr_dir = "./data/hr_images"  # Directory containing high-resolution images
+
+    # Load dataset
+    lr_images, hr_images = load_dataset(lr_dir, hr_dir)
 
     # Placeholders for input and output images
     x = tf.placeholder(tf.float32, shape=[None, None, None, 1], name="input_image")  # LR input image
@@ -103,17 +131,22 @@ def main():
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
 
-        # Example training loop (replace with actual dataset loading and training logic)
-        for epoch in range(10):  # Number of epochs
+        for epoch in range(epochs):  # Number of epochs
             print(f"Epoch {epoch + 1}")
             
-            # Dummy data for demonstration purposes
-            lr_images = np.random.rand(batch_size, 16, 16, 1).astype(np.float32)  # Low-resolution images
-            hr_images = np.random.rand(batch_size, 48, 48, 1).astype(np.float32)  # High-resolution images
-            
-            # Train step
-            _, current_loss, current_psnr = sess.run([train_op, loss, psnr], feed_dict={x: lr_images, y: hr_images})
-            print(f"Loss: {current_loss:.4f}, PSNR: {np.mean(current_psnr):.4f}")
+            # Shuffle dataset
+            indices = np.arange(len(lr_images))
+            np.random.shuffle(indices)
+            lr_images = lr_images[indices]
+            hr_images = hr_images[indices]
+
+            for i in range(0, len(lr_images), batch_size):
+                batch_lr = lr_images[i:i + batch_size]
+                batch_hr = hr_images[i:i + batch_size]
+
+                # Train step
+                _, current_loss, current_psnr = sess.run([train_op, loss, psnr], feed_dict={x: batch_lr, y: batch_hr})
+                print(f"Batch {i // batch_size}: Loss: {current_loss:.4f}, PSNR: {np.mean(current_psnr):.4f}")
 
         # Save the trained model
         saver = tf.train.Saver()
