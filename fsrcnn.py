@@ -16,11 +16,11 @@ def model(x, y, lr_size, scale, batch, lr, dsm):
 
     # -- Filters and Biases
     filters = [
-        tf.Variable(tf.random_normal([5, 5, 1, d], stddev=0.1), name="f1"),  # Feature extraction layer
-        tf.Variable(tf.random_normal([1, 1, d, s], stddev=0.1), name="f2"),  # Shrinking layer
-        tf.Variable(tf.random_normal([1, 1, s, d], stddev=0.1), name="f%d" % (3 + m)),  # Expanding layer
-        tf.Variable(tf.random_normal([1, 1, d, PS], stddev=0.1), name="f%d" % (4 + m))  # Deconvolution layer
-    ]
+    tf.Variable(tf.random.normal([5, 5, 1, d], stddev=0.1), name="f1"),
+    tf.Variable(tf.random.normal([1, 1, d, s], stddev=0.1), name="f2"),
+    tf.Variable(tf.random.normal([1, 1, s, d], stddev=0.1), name="f%d" % (3 + m)),
+    tf.Variable(tf.random.normal([1, 1, d, PS], stddev=0.1), name="f%d" % (4 + m))
+]
 
     bias = [
         tf.get_variable(shape=[d], initializer=bias_initializer, name="b1"),
